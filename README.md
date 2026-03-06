@@ -2,9 +2,19 @@
 
 ## Identity
 ### AWS Directory Service: 
+### IAM: IAM策略不能直接附件到EKS Pods
+### AD Connector: 可以直接连接到本地的Active Directory；可与AWS IAM Identity Center集成，实现集中化的身份管理和跨账户权限控制
+### Amazon Cognito: 主要用于支持Web和移动应用的身份联合，而不是企业级的集中身份管理和控制访问；可以与Active Directory集成但需要额外开发来实现身份联合
+### RBAC: RBAC是K8S内部的权限控制机制，无法直接控制AWS资源的访问权限
+### IRSA: 
+
 
 ## S3
 ### Amazon S3: 对象存储，不支持标准文件系统结构
+### S3 Interface Endpoint: 允许私有网络的资源通过AWS私有网络访问S3，会产生额外费用，需要安全组控制流量
+### S3 Gateway Endpoint: 允许私有网络的资源通过AWS私有网络访问S3，免费，控制流量不需要安全组直接通过路由表配置
+### 
+
 ## Amazon
 ### Amazon Kinesis Data Firehose: 实时数据流收集和传输
 ### Amazon Simple Email Service(SES): send email
@@ -19,6 +29,7 @@
 
 ## Network
 ### ACL: 网络ACL用于控制子网级别流量，但无法直接应用于API Gateway
+### NAT Gateway: 流量仍会通过互联网，会产生额外费用
 
 
 ## API
