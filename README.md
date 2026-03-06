@@ -9,7 +9,15 @@
 ### IRSA: 
 
 ## EC2
+### On-Demand Instance: 
+### Standard Reserved Instance: 适用于长期稳定的工作负载
+### Convertible Reserved Instance: 允许实例类型灵活转换
+### Scheduled Reserved Instance: 适用于定期运行的工作负载
+### Spot Instance: 价格低但可能会中断
 ### EC2 Spot Instance: 需要管理实例的生命周期
+### EC2 Auto Scaling: 计划扩展 - 使用于固定的高峰时间；目标跟踪 - 可以动态调整
+### CPU Utilization: 可以反应实例负载，但无法反应SQS队列积压情况
+### 
 
 ## S3
 ### Amazon S3: 对象存储，不支持标准文件系统结构
@@ -26,7 +34,7 @@
 ### Amazon Simple Notification Service(SNS): 
 ### Amazon Elastic Container Service(ECS): 容器编排服务适合容器化应用
 ### Amazon Elastic kubernetes Service(EKS): 托管的Kubernetes服务，适合容器化应用
-### Amazon SQS: 用于队列管理，但不具备复杂工作流编排能力
+### Amazon SQS: 用于队列管理，但不具备复杂工作流编排能力；ApproximateNumberOfMessages属性 - 动态调整合适扩展
 ### AWS Step Function: 提供强大的工作流编排能力，适合复杂任务管理
 ### AWS Batch: 处理批量任务，完全托管
 
