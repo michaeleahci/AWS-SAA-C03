@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Code block styling */
+pre {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.875em;
+    color: #ef4444;
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+}
+
+pre code {
+    color: inherit;
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Markdown-like content styling */
+.prose h1 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #0f172a;
+}
+
+.prose h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #1e293b;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+.prose h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #334155;
+}
+
+.prose p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    color: #475569;
+}
+
+.prose ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.prose li {
+    margin-bottom: 0.5rem;
+}
+
+.prose strong {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.prose a {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.prose a:hover {
+    color: #1d4ed8;
+}
+
+.prose blockquote {
+    border-left: 4px solid #e2e8f0;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* Sidebar active state */
+.nav-item.active {
+    background-color: #1e293b; /* slate-800 */
+    color: #fbbf24; /* amber-400 */
+    border-left: 3px solid #fbbf24;
+}
+
+.nav-item {
+    border-left: 3px solid transparent;
+}
