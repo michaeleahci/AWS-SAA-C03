@@ -1,0 +1,10 @@
+Amazon S3: 对象存储，不支持标准文件系统结构
+S3 Glacier: 是一个归档存储类别，适合长期存储，但不支持立即访问
+S3 Intelligent-Tiering: 可以优化存储成本，但不适合长期归档存储
+S3 Standard: 可立即访问
+S3 Glacier Deep Archive: 适合长期归档
+S3 Object Lock: 合规模式可以防止任何用户（包括root）删除对象；治理模式允许管理员覆盖锁定并删除对象
+S3 One Zone-IA: 可用性低，不是最大弹性
+S3 File Gateway: 主要用途是将本地文件存储与S3集成，提供文件接口访问S3，但不完全支持文件共享协议（如SMB）
+Amazon FSx for Windows File Server: 专门为Windows文件共享设计的服务，支持SMB
+Amazon EFS: 针对Linux设计的，使用NFS协议，不支持Windows文件共享协议
