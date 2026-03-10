@@ -16,16 +16,66 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('close-modal-btn');
     const cancelBtn = document.getElementById('cancel-btn');
     const addTopicForm = document.getElementById('add-topic-form');
+    const langToggleBtn = document.getElementById('lang-toggle-btn');
 
     // State
     let currentId = 'home';
+    let currentLang = 'en'; // 'en' or 'zh'
     let knowledgeBaseData = [];
     let categories = {};
+    let isEditing = false;
+    let editingId = null;
+
+    // Language Toggle Logic
+    langToggleBtn.addEventListener('click', () => {
+        currentLang = currentLang === 'en' ? 'zh' : 'en';
+        langToggleBtn.textContent = currentLang.toUpperCase();
+        
+        // Re-render everything
+        renderNavigation(sidebarNav, searchInput.value);
+        renderNavigation(mobileSidebarNav, mobileSearchInput.value);
+        
+        // Update current content if viewing a page
+        if (currentId) {
+            navigateTo(currentId);
+        }
+    });
 
     // Initialize Lucide icons
     if (window.lucide) {
         lucide.createIcons();
     }
+
+    // Initialize Quill Editors
+    const quillEn = new Quill('#editor-container-en', {
+        theme: 'snow',
+        placeholder: 'Enter content in English...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'blockquote', 'code-block'],
+                [{ 'color': [] }, { 'background': [] }],
+                ['clean']
+            ]
+        }
+    });
+
+    const quillZh = new Quill('#editor-container-zh', {
+        theme: 'snow',
+        placeholder: '输入中文内容...',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'blockquote', 'code-block'],
+                [{ 'color': [] }, { 'background': [] }],
+                ['clean']
+            ]
+        }
+    });
 
     // Fetch Data
     async function fetchData() {
@@ -76,10 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // For now, object keys order (insertion order usually)
         
         Object.keys(categories).forEach(category => {
-            const items = categories[category].filter(item => 
-                item.title.toLowerCase().includes(filter) || 
-                item.content.toLowerCase().includes(filter)
-            );
+            const items = categories[category].filter(item => {
+                const title = item.title[currentLang] || item.title['en'] || '';
+                const content = item.content[currentLang] || item.content['en'] || '';
+                return title.toLowerCase().includes(filter) || content.toLowerCase().includes(filter);
+            });
 
             if (items.length > 0) {
                 // Category Header
@@ -93,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const link = document.createElement('a');
                     link.href = `#${item.id}`;
                     link.className = `nav-item block px-3 py-2 text-sm rounded-md hover:bg-slate-800 hover:text-white transition-colors ${currentId === item.id ? 'active' : 'text-slate-300'}`;
-                    link.textContent = item.title;
+                    link.textContent = item.title[currentLang] || item.title['en'];
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         navigateTo(item.id);
@@ -113,8 +164,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = knowledgeBaseData.find(i => i.id === id);
         
         if (item) {
-            // Update content
-            contentArea.innerHTML = item.content;
+            // Clear content area
+            contentArea.innerHTML = '';
+
+            // Edit Button Container
+            const editBtnContainer = document.createElement('div');
+            editBtnContainer.className = 'flex justify-end mb-4 border-b border-gray-200 pb-2';
+            
+            const editBtn = document.createElement('button');
+            editBtn.className = 'px-3 py-1.5 bg-slate-100 text-slate-700 rounded border border-slate-300 hover:bg-slate-200 flex items-center gap-2 text-xs font-medium transition-colors';
+            editBtn.innerHTML = '<i data-lucide="edit" class="w-3 h-3"></i> Edit';
+            editBtn.onclick = () => openEditModal(item);
+            
+            editBtnContainer.appendChild(editBtn);
+            contentArea.appendChild(editBtnContainer);
+
+            // Content
+            const contentDiv = document.createElement('div');
+            const content = item.content[currentLang] || item.content['en'] || '<p>Content not available in this language.</p>';
+            contentDiv.innerHTML = content;
+            contentArea.appendChild(contentDiv);
             
             // Re-initialize icons for new content
             if (window.lucide) {
@@ -170,19 +239,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Modal Logic
-    function openModal() {
+    function showModal() {
         addModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+    }
+
+    function openAddModal() {
+        isEditing = false;
+        editingId = null;
+        const modalTitle = document.getElementById('modal-title');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        if (modalTitle) modalTitle.textContent = 'Add New Topic';
+        if (submitBtnText) submitBtnText.textContent = 'Add Topic';
+        addTopicForm.reset();
+        
+        // Clear editors
+        quillEn.setText('');
+        quillZh.setText('');
+        
+        showModal();
+    }
+
+    function openEditModal(topic) {
+        isEditing = true;
+        editingId = topic.id;
+        const modalTitle = document.getElementById('modal-title');
+        const submitBtnText = document.getElementById('submit-btn-text');
+        if (modalTitle) modalTitle.textContent = 'Edit Topic';
+        if (submitBtnText) submitBtnText.textContent = 'Save Changes';
+        
+        document.getElementById('topic-title-en').value = topic.title.en || '';
+        document.getElementById('topic-title-zh').value = topic.title.zh || '';
+        document.getElementById('topic-category').value = topic.category || '';
+        
+        // Load HTML content directly into Quill
+        const contentEn = topic.content.en || '';
+        const contentZh = topic.content.zh || '';
+        
+        // Use clipboard to paste HTML
+        quillEn.clipboard.dangerouslyPasteHTML(contentEn);
+        quillZh.clipboard.dangerouslyPasteHTML(contentZh);
+
+        showModal();
     }
 
     function closeModal() {
         addModal.classList.add('hidden');
         document.body.style.overflow = '';
         addTopicForm.reset();
+        isEditing = false;
+        editingId = null;
     }
 
     if (addTopicBtn) {
-        addTopicBtn.addEventListener('click', openModal);
+        addTopicBtn.addEventListener('click', openAddModal);
     }
     
     if (closeModalBtn) {
@@ -198,26 +308,39 @@ document.addEventListener('DOMContentLoaded', () => {
         addTopicForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const title = document.getElementById('topic-title').value;
+            const titleEn = document.getElementById('topic-title-en').value;
+            const titleZh = document.getElementById('topic-title-zh').value;
             const category = document.getElementById('topic-category').value;
-            const rawContent = document.getElementById('topic-content').value;
             
-            // Convert Markdown to HTML
-            const content = marked.parse(rawContent);
+            // Get HTML content from Quill
+            // root.innerHTML gives us the HTML representation of the editor content
+            const contentEn = quillEn.root.innerHTML;
+            const contentZh = quillZh.root.innerHTML;
             
-            // Generate a simple ID
-            const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            // Generate ID only if adding new
+            const id = isEditing ? editingId : titleEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
             const newTopic = {
                 id,
-                title,
                 category,
-                content
+                title: {
+                    en: titleEn,
+                    zh: titleZh
+                },
+                content: {
+                    en: contentEn,
+                    zh: contentZh
+                },
+                // We no longer store markdown source as we use WYSIWYG
+                markdown: null 
             };
 
             try {
-                const response = await fetch('/api/topics', {
-                    method: 'POST',
+                const url = isEditing ? `/api/topics/${id}` : '/api/topics';
+                const method = isEditing ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: {
                         'Content-Type': 'application/json'
                     },
@@ -228,8 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Refresh data
                     await fetchData();
                     closeModal();
-                    navigateTo(id); // Navigate to new topic
-                    alert('Topic added successfully!');
+                    navigateTo(id); // Navigate to topic
+                    alert(isEditing ? 'Topic updated successfully!' : 'Topic added successfully!');
                 } else {
                     const errorData = await response.json();
                     alert('Error adding topic: ' + (errorData.error || 'Unknown error'));
