@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancel-btn');
     const addTopicForm = document.getElementById('add-topic-form');
     const langToggleBtn = document.getElementById('lang-toggle-btn');
+    
+    // Context Menu Elements
+    const contextMenu = document.getElementById('context-menu');
+    const ctxEditBtn = document.getElementById('ctx-edit');
+    const ctxDeleteBtn = document.getElementById('ctx-delete');
+    let contextMenuTargetId = null;
 
     // State
     let currentId = 'home';
@@ -40,6 +46,55 @@ document.addEventListener('DOMContentLoaded', () => {
             navigateTo(currentId);
         }
     });
+
+    // Close context menu when clicking elsewhere
+    document.addEventListener('click', (e) => {
+        if (contextMenu && !contextMenu.contains(e.target)) {
+            contextMenu.classList.add('hidden');
+        }
+    });
+
+    // Context Menu Actions
+    if (ctxEditBtn) {
+        ctxEditBtn.addEventListener('click', () => {
+            contextMenu.classList.add('hidden');
+            if (contextMenuTargetId) {
+                const item = knowledgeBaseData.find(i => i.id === contextMenuTargetId);
+                if (item) openEditModal(item);
+            }
+        });
+    }
+
+    if (ctxDeleteBtn) {
+        ctxDeleteBtn.addEventListener('click', async () => {
+            contextMenu.classList.add('hidden');
+            if (contextMenuTargetId) {
+                if (confirm('Are you sure you want to delete this topic? This action cannot be undone.')) {
+                    try {
+                        const response = await fetch(`/api/topics/${contextMenuTargetId}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.ok) {
+                            alert('Topic deleted successfully');
+                            // If deleted current topic, go home
+                            if (currentId === contextMenuTargetId) {
+                                navigateTo('home');
+                            } else {
+                                fetchData();
+                            }
+                        } else {
+                            const error = await response.json();
+                            alert('Error deleting topic: ' + (error.error || 'Unknown error'));
+                        }
+                    } catch (error) {
+                        console.error('Error deleting topic:', error);
+                        alert('Network error: ' + error.message);
+                    }
+                }
+            }
+        });
+    }
 
     // Initialize Lucide icons
     if (window.lucide) {
@@ -145,6 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.href = `#${item.id}`;
                     link.className = `nav-item block px-3 py-2 text-sm rounded-md hover:bg-slate-800 hover:text-white transition-colors ${currentId === item.id ? 'active' : 'text-slate-300'}`;
                     link.textContent = item.title[currentLang] || item.title['en'];
+                    
+                    // Context Menu Event
+                    link.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        contextMenuTargetId = item.id;
+                        
+                        // Position menu
+                        const x = e.clientX;
+                        const y = e.clientY;
+                        
+                        contextMenu.style.left = `${x}px`;
+                        contextMenu.style.top = `${y}px`;
+                        contextMenu.classList.remove('hidden');
+                    });
+
                     link.addEventListener('click', (e) => {
                         e.preventDefault();
                         navigateTo(item.id);

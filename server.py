@@ -114,6 +114,49 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
+    def do_DELETE(self):
+        if self.path.startswith('/api/topics/'):
+            topic_id = self.path.split('/')[-1]
+            
+            try:
+                # Read existing data
+                try:
+                    with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                except (FileNotFoundError, json.JSONDecodeError):
+                    self.send_response(404)
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Data file not found or invalid"}')
+                    return
+                
+                # Find and delete
+                original_len = len(data)
+                data = [topic for topic in data if topic.get('id') != topic_id]
+                
+                if len(data) == original_len:
+                    self.send_response(404)
+                    self.end_headers()
+                    self.wfile.write(b'{"error": "Topic not found"}')
+                    return
+
+                # Write back to file
+                with open(DATA_FILE, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+                
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"message": "Topic deleted successfully"}).encode('utf-8'))
+                
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+        else:
+            self.send_response(404)
+            self.end_headers()
+
 print(f"Serving at http://localhost:{PORT}")
 with socketserver.TCPServer(("", PORT), CustomHandler) as httpd:
     httpd.serve_forever()
